@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const User = require('../models/User');
-const Preference = require('../models/Preference');
+const Preference = require('../models/Theme');
 
 // Connect to the test database
 beforeAll(async () => {
