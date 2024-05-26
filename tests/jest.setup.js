@@ -19,13 +19,7 @@ beforeAll(async () => {
     });
 });
 
-// Clean up the database before each test
-beforeEach(async () => {
-    await Promise.all([
-        User.deleteMany({}),
-        Preference.deleteMany({}),
-    ]);
-});
+
 
 // Disconnect from the database after all tests are done
 afterAll(async () => {
