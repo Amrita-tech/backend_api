@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getTheme, saveTheme } = require('../controllers/themeController');
+const { getThemes, saveTheme } = require('../controllers/themeController');
 const { authenticateToken } = require('../middleware/auth');
 
 /**
@@ -26,7 +26,7 @@ const { authenticateToken } = require('../middleware/auth');
  *       403:
  *         description: Forbidden. Invalid token.
  */
-router.get('/', authenticateToken, getTheme);
+router.get('/', authenticateToken, getThemes);
 
 /**
  * @swagger

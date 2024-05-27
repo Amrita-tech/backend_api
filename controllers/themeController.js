@@ -1,4 +1,57 @@
+// controllers/themeController.js
 const Theme = require('../models/Theme');
+const NodeCache = require('node-cache');
+const cache = new NodeCache({ stdTTL: 3600 });
+
+exports.getThemes = async (req, res) => {
+   
+  const userId = req.user._id;
+  console.log(req.user._id);
+  try {
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is missing' });
+    }
+
+    const cachedTheme = cache.get(req.user._id);
+    if (cachedTheme) {
+      console.log('Cache hit!');
+      return res.json(cachedTheme);
+    }
+
+    console.log('Cache miss!');
+    const theme = await Theme.findOne({ userId: req.user._id });
+    if (theme) {
+      cache.set(req.user._id, theme); // Cache for 1 hour
+      return res.json(theme);
+    } else {
+      return res.status(404).json({ message: 'Theme not found' });
+    }
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+exports.saveTheme = async (req, res) => {
+   
+  const userId  = req.user._id;
+  const { primaryColor } = req.body;
+  try {
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is missing' });
+    }
+
+    const theme = await Theme.findOneAndUpdate(
+        { userId: req.user._id },
+      { primaryColor },
+      { new: true, upsert: true }
+    );
+   
+    cache.set(userId, theme); // Cache for 1 hour
+    return res.json(theme);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
 
 /**
  * @swagger
@@ -15,17 +68,7 @@ const Theme = require('../models/Theme');
  *       403:
  *         description: Forbidden. Invalid token.
  */
-const getTheme = async (req, res) => {
-  try {
-    const theme = await Theme.findOne({ userId: req.user._id });
-    if (!theme) {
-      return res.status(404).json({ message: 'Theme not found' });
-    }
-    res.json(theme);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+
 
 /**
  * @swagger
@@ -55,22 +98,5 @@ const getTheme = async (req, res) => {
  *       500:
  *         description: Internal server error.
  */
-const saveTheme = async (req, res) => {
-  try {
-    const { primaryColor } = req.body;
-    const theme = await Theme.findOneAndUpdate(
-      { userId: req.user._id },
-      { primaryColor },
-      { new: true, upsert: true }
-    );
-    res.json(theme);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
 
-module.exports = {
-  getTheme,
-  saveTheme,
-};
 
